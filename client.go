@@ -30,8 +30,8 @@ func NewClient(address string) *Client {
 		client = &http.Client{
 			Transport: &http.Transport{
 				Protocols: protocols,
-				DialContext: func(ctx context.Context, network string, addr string) (net.Conn, error) {
-					network = "unix"
+				DialContext: func(ctx context.Context, _ string, addr string) (net.Conn, error) {
+					network := "unix"
 					addr = "@" + strings.TrimSuffix(strings.TrimPrefix(addr, "http://"), ":80")
 					return net.DialTimeout(network, addr, 5*time.Second)
 				},

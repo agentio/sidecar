@@ -64,6 +64,9 @@ func (b *ClientStreamForClient[Req, Res]) CloseAndReceive() (*Res, error) {
 	b.wg.Wait()
 	var response Res
 	err = Receive(b.reader, &response)
+	if err != nil {
+		return nil, err
+	}
 	_, err = io.ReadAll(b.reader)
 	b.Trailer = b.resp.Trailer
 	return &response, err

@@ -28,6 +28,9 @@ func Cmd() *cobra.Command {
 				service.EchoExpandProcedure,
 				sidecar.NewRequest(&echopb.EchoRequest{Text: message}),
 			)
+			if err != nil {
+				return err
+			}
 			for {
 				response, err := stream.Receive()
 				if errors.Is(err, io.EOF) {

@@ -42,7 +42,10 @@ func Cmd() *cobra.Command {
 						return
 					}
 				}
-				stream.CloseRequest()
+				err = stream.CloseRequest()
+				if err != nil {
+					log.Printf("%s", err)
+				}
 			}()
 			for {
 				response, err := stream.Receive()
@@ -58,7 +61,10 @@ func Cmd() *cobra.Command {
 				_, _ = cmd.OutOrStdout().Write(body)
 				_, _ = cmd.OutOrStdout().Write([]byte("\n"))
 			}
-			stream.CloseResponse()
+			err = stream.CloseResponse()
+			if err != nil {
+				return err
+			}
 			if verbose {
 				fmt.Println("Response Trailers:")
 				for key, values := range stream.Trailer {

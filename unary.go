@@ -28,6 +28,9 @@ type Response[T any] struct {
 // The method argument should be the full path of the gRPC handler.
 func CallUnary[Req, Res any](client *Client, method string, request *Request[Req]) (*Response[Res], error) {
 	buf, err := serialize(request.Msg)
+	if err != nil {
+		return nil, err
+	}
 	url := client.host + method
 	req, err := http.NewRequest(http.MethodPost, url, buf)
 	if err != nil {
@@ -38,7 +41,7 @@ func CallUnary[Req, Res any](client *Client, method string, request *Request[Req
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	var response Res
 	err = Receive(resp.Body, &response)
 	if err != nil {

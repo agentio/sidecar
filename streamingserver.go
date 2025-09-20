@@ -9,8 +9,6 @@ import (
 type ServerStreamForClient[Req, Res any] struct {
 	Trailer http.Header
 
-	client *http.Client
-	req    *http.Request
 	resp   *http.Response
 	reader io.ReadCloser
 }
@@ -20,6 +18,9 @@ type ServerStreamForClient[Req, Res any] struct {
 // The method argument should be the full path of the gRPC handler.
 func CallServerStream[Req, Res any](client *Client, method string, request *Request[Req]) (*ServerStreamForClient[Req, Res], error) {
 	buf, err := serialize(request.Msg)
+	if err != nil {
+		return nil, err
+	}
 	url := client.host + method
 	req, err := http.NewRequest(http.MethodPost, url, buf)
 	if err != nil {

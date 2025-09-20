@@ -18,7 +18,10 @@ func Send(w io.Writer, value any) error {
 	if err != nil {
 		return err
 	}
-	buf.WriteTo(w)
+	_, err = buf.WriteTo(w)
+	if err != nil {
+		return err
+	}
 	if f, ok := w.(http.Flusher); ok {
 		f.Flush()
 	}
@@ -44,7 +47,7 @@ func Receive(reader io.Reader, value any) error {
 	}
 	length := binary.BigEndian.Uint32(prefix[1:5])
 	body := make([]byte, length)
-	n, err = reader.Read(body)
+	_, err = reader.Read(body)
 	if err != nil {
 		return err
 	}

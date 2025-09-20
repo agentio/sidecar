@@ -2,7 +2,6 @@
 package track
 
 import (
-	"fmt"
 	"io"
 	"time"
 )
@@ -10,6 +9,6 @@ import (
 func Measure(start time.Time, name string, count int, out io.Writer) {
 	if count > 1 {
 		elapsed := time.Since(start)
-		out.Write([]byte(fmt.Sprintf("%s", elapsed/time.Duration(count))))
+		_, _ = out.Write([]byte(time.Duration(elapsed / time.Duration(count)).String()))
 	}
 }

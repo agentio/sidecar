@@ -1,6 +1,3 @@
-build:
-	go install ./...
-
 all:	rpc
 	go install ./...
 
@@ -28,3 +25,5 @@ rpc:
         --go_opt=Mecho/v1/echo.proto=github.com/agentio/sidecar/cmd/echo-sidecar/genproto/echopb \
 	--go_out='cmd/echo-sidecar/genproto'
 
+lint:
+	golangci-lint run
