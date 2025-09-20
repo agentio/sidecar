@@ -1,3 +1,4 @@
+// Package get implements calls to the get method.
 package get
 
 import (
@@ -5,8 +6,8 @@ import (
 	"time"
 
 	"github.com/agentio/sidecar"
-	"github.com/agentio/sidecar/cmd/echo-sidecar/service"
 	"github.com/agentio/sidecar/cmd/echo-sidecar/genproto/echopb"
+	"github.com/agentio/sidecar/cmd/echo-sidecar/service"
 	"github.com/agentio/sidecar/cmd/echo-sidecar/track"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"

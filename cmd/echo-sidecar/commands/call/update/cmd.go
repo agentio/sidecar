@@ -1,4 +1,4 @@
-// Package get implements calls to the get method.
+// Package update implements calls to the update method.
 package update
 
 import (

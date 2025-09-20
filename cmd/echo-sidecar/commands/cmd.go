@@ -1,3 +1,4 @@
+// Package commands contains command implementations.
 package commands
 
 import (
