@@ -2,9 +2,9 @@
 
 Sidecar is a library for creating gRPC clients and servers in Go.
 
-Sidecar arose from the realization that popular gRPC libraries like [grpc-go](https://github.com/grpc/grpc-go) and [connect-go](https://github.com/connectrpc/connect-go) are massively overloaded with features that aren't needed by gRPC clients and servers that run with sidecar proxies. In these environments, the sidecars themselves include all of the powerful networking features that applications need, and building these into applications adds needless complexity, bloat, and supply-chain risk.
+Sidecar arose from the realization that popular gRPC libraries like [grpc-go](https://github.com/grpc/grpc-go) and [connect-go](https://github.com/connectrpc/connect-go) are loaded with capabilities that aren't needed by gRPC applications that use sidecar proxies. When applications use sidecars, the sidecars provide these capabilities along with assurance that they are implemented and configured correctly. Redundantly including them in networking support libraries adds needless complexity, bloat, and supply-chain risk.
 
-Sidecar intentionally excludes capabilities that are better-handled by proxies, including but not limited to:
+Some of the capabilities that Sidecar intentionally omits include:
 - Compression
 - Transcoding
 - Name Resolution
@@ -14,15 +14,26 @@ Sidecar intentionally excludes capabilities that are better-handled by proxies, 
 - Health Checking
 - Observability
 
-If you prefer to build these capabilities into your application, please use another gRPC library. However, if you are interested in creating lightweight gRPC services that delegate advanced networking to sidecar proxies, you are welcome to use Sidecar either directly or by copying its code into your application.
+If you need these capabilities built into your application, then another gRPC library is probably a better fit. But if you are building gRPC services that delegate advanced networking to sidecar proxies, Sidecar can help you make your services lean and maintainable.
+
+## Built on the Go standard library
+
+With Sidecar, gRPC applications build directly on the HTTP2 support in the Go standard library. Beginning with Go 1.25, this includes [SetUnencryptedHTTP2](https://pkg.go.dev/net/http#Protocols.SetUnencryptedHTTP2), which clients and servers can use to create unencrypted HTTP2 connections (also called "HTTP/2 cleartext" or h2c). It also includes connection sharing and reuse, which allows HTTP2 connections to be automatically reused, and all configuration options in the Go standard library are directly available to Sidecar-based applications.
 
 ## No Generated Code
 
-One of the tenets of Sidecar is to avoid generated code in client and server implementations. Instead, we rely on Go generics and slightly increased inline complexity in Sidecar servers and clients. For more detail, see the `echo-sidecar` example.
+Apart from protocol buffer serialization, Sidecar does not use code generation. Instead, Go generics are used to call gRPC methods with appropriate types. This slightly increases inline complexity, but adds development and build-time simplicity. For example, here is a call to a unary gRPC method:
+```go
+response, err := sidecar.CallUnary[echopb.EchoRequest, echopb.EchoResponse](
+	client,
+	"/echo.v1.Echo/Get",
+	sidecar.NewRequest(&echopb.EchoRequest{Text: message}),
+)
+```
 
 ## Example
 
-A complete example is in [cmd/echo-sidecar](/cmd/echo-sidecar), a command-line tool that uses Sidecar to build and call a gRPC server that implements a simple echo service. All four gRPC streaming modes are supported.
+This repo includes [echo-sidecar](/cmd/echo-sidecar), a command-line tool that uses Sidecar to build and call a gRPC server that implements a simple echo service. All four gRPC streaming modes are supported.
 
 ## License
 
