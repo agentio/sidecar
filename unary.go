@@ -5,20 +5,8 @@ import (
 	"net/http"
 )
 
-// Request describes a request to a unary or server-streaming gRPC method.
-type Request[T any] struct {
-	Msg *T
-}
-
-// NewRequest constructs a request to a unary or server-streaming gRPC method.
-func NewRequest[T any](message *T) *Request[T] {
-	return &Request[T]{
-		Msg: message,
-	}
-}
-
-// Response describes a response from a unary gRPC method.
-type Response[T any] struct {
+// UnaryResponse describes a response from a unary gRPC method.
+type UnaryResponse[T any] struct {
 	Msg     *T
 	Trailer http.Header
 }
@@ -26,8 +14,8 @@ type Response[T any] struct {
 // CallUnary makes a unary RPC call.
 //
 // The method argument should be the full path of the gRPC handler.
-func CallUnary[Req, Res any](client *Client, method string, request *Request[Req]) (*Response[Res], error) {
-	buf, err := serialize(request.Msg)
+func CallUnary[Req, Res any](client *Client, method string, request *Req) (*UnaryResponse[Res], error) {
+	buf, err := serialize(request)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +39,7 @@ func CallUnary[Req, Res any](client *Client, method string, request *Request[Req
 	if err != nil {
 		return nil, err
 	}
-	return &Response[Res]{
+	return &UnaryResponse[Res]{
 		Msg:     &response,
 		Trailer: resp.Trailer,
 	}, nil

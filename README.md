@@ -24,10 +24,13 @@ With Sidecar, gRPC applications build directly on the HTTP2 support in the Go st
 
 Apart from protocol buffer serialization, Sidecar does not use code generation. Instead, Go generics are used to call gRPC methods with appropriate types. This slightly increases inline complexity, but adds development and build-time simplicity. For example, here is a call to a unary gRPC method:
 ```go
+// Create a reusable client.
+client := sidecar.NewClient(address)
+// Use the client to make a unary rpc call.
 response, err := sidecar.CallUnary[echopb.EchoRequest, echopb.EchoResponse](
 	client,
 	"/echo.v1.Echo/Get",
-	sidecar.NewRequest(&echopb.EchoRequest{Text: message}),
+	&echopb.EchoRequest{Text: message},
 )
 ```
 
