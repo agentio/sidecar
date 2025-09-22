@@ -23,21 +23,12 @@ func Cmd() *cobra.Command {
 		Use:  "serve",
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				//log.Printf("Request: %s %s (HTTP/%d.%d)", r.Method, r.URL.Path, r.ProtoMajor, r.ProtoMinor)
-				switch r.URL.Path {
-				case service.EchoGetProcedure:
-					handleGet(w, r)
-				case service.EchoExpandProcedure:
-					handleExpand(w, r)
-				case service.EchoCollectProcedure:
-					handleCollect(w, r)
-				case service.EchoUpdateProcedure:
-					handleUpdate(w, r)
-				default:
-					http.Error(w, "Not found", http.StatusNotFound)
-				}
-			})
+			mux := http.NewServeMux()
+			mux.HandleFunc(service.EchoGetProcedure, handleGet)
+			mux.HandleFunc(service.EchoExpandProcedure, handleExpand)
+			mux.HandleFunc(service.EchoCollectProcedure, handleCollect)
+			mux.HandleFunc(service.EchoUpdateProcedure, handleUpdate)
+			server := sidecar.NewServer(mux)
 			var err error
 			var listener net.Listener
 			if port == 0 {
@@ -48,7 +39,6 @@ func Cmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			server := sidecar.NewServer(handler)
 			return server.Serve(listener)
 		},
 	}
