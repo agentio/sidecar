@@ -34,6 +34,25 @@ response, err := sidecar.CallUnary[echopb.EchoRequest, echopb.EchoResponse](
 )
 ```
 
+## Bring Your Own Serialization
+
+Along with protobuf-encoded messages, Sidecar allows messages to be sent and received as raw bytes. Here's an example with protobuf encoding (replace that with your own favorite encoding):
+```go
+// Create a reusable client.
+client := sidecar.NewClient(address)
+// Marshal a request message.
+b, _ := proto.Marshal(&echopb.EchoRequest{Text: message})
+// Use the client to make a unary rpc call.
+response, err := sidecar.CallUnary[[]byte, []byte](
+	client,
+	"/echo.v1.Echo/Get",
+	&b,
+)
+// Unmarshal the response
+var message echopb.EchoResponse
+err = proto.Unmarshal(*(response.Msg), &message)
+```
+
 ## Example
 
 This repo includes [echo-sidecar](/cmd/echo-sidecar), a command-line tool that uses Sidecar to build and call a gRPC server that implements a simple echo service. All four gRPC streaming modes are supported.
