@@ -21,14 +21,13 @@ func CallServerStream[Req, Res any](client *Client, method string, request *Req)
 	if err != nil {
 		return nil, err
 	}
-	url := client.host + method
+	url := client.Host + method
 	req, err := http.NewRequest(http.MethodPost, url, buf)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/grpc")
-	client.addHeaders(req)
-	resp, err := client.httpclient.Do(req)
+	req.Header = client.Header.Clone()
+	resp, err := client.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

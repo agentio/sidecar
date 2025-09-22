@@ -8,56 +8,64 @@ import (
 	"time"
 )
 
-// Client represents a gRPC client and includes an http.Client that
-// is configured for H2C and reusable HTTP2 connections and the host
-// name of a gRPC server. This is a minimal configuration for making
-// gRPC calls.
+// Client represents a gRPC client and includes an http.Client,
+// a host name, and a header to be sent with all requests.
 type Client struct {
-	httpclient *http.Client
-	host       string
+	Host       string
 	Header     http.Header
+	HttpClient *http.Client
 }
 
-// NewClient creates a client representation that includes an http.Client
-// and a host name.
+// NewClient creates a client representation from an address.
+// Addresses must be in the format "HOSTNAME:PORT" or "unix:@SOCKET".
+// Connections to port 443 use TLS. All others are cleartext (h2c).
 func NewClient(address string) *Client {
-	// Configure protocols for H2C-only support (HTTP/2 cleartext)
+	// Expect TLS on port 443 and use the default HTTP client.
+	if strings.HasSuffix(address, ":443") {
+		return &Client{
+			Host:       "https://" + address,
+			Header:     defaultHeader(),
+			HttpClient: http.DefaultClient,
+		}
+	}
+	// All other clients need h2c-only support (HTTP/2 cleartext).
 	protocols := new(http.Protocols)
-	protocols.SetUnencryptedHTTP2(true) // Enable H2C (HTTP/2 cleartext)
+	protocols.SetUnencryptedHTTP2(true) // Enable h2c (HTTP/2 cleartext)
 	protocols.SetHTTP1(false)           // Explicitly disable HTTP/1.1
 	protocols.SetHTTP2(false)           // Explicitly disable encrypted HTTP/2 (HTTPS)
-	var client *http.Client
+	// If required, create a client that can call unix sockets.
 	if strings.HasPrefix(address, "unix:") {
-		client = &http.Client{
-			Transport: &http.Transport{
-				Protocols: protocols,
-				DialContext: func(ctx context.Context, _ string, addr string) (net.Conn, error) {
-					network := "unix"
-					addr = "@" + strings.TrimSuffix(strings.TrimPrefix(addr, "http://"), ":80")
-					return net.DialTimeout(network, addr, 5*time.Second)
+		return &Client{
+			Host:   strings.Replace(address, "unix:", "http://", 1),
+			Header: defaultHeader(),
+			HttpClient: &http.Client{
+				Transport: &http.Transport{
+					Protocols: protocols,
+					DialContext: func(ctx context.Context, _ string, addr string) (net.Conn, error) {
+						addr = strings.TrimPrefix(addr, "http://")
+						addr = strings.TrimSuffix(addr, ":80")
+						addr = "@" + addr
+						return net.DialTimeout("unix", addr, 5*time.Second)
+					},
 				},
 			},
 		}
-	} else {
-		client = &http.Client{
+	}
+	// Create a client for networked h2c connections.
+	return &Client{
+		Host:   "http://" + address,
+		Header: defaultHeader(),
+		HttpClient: &http.Client{
 			Transport: &http.Transport{
 				Protocols: protocols,
 			},
-		}
+		},
 	}
-	host := address
-	if strings.HasPrefix(address, "unix:") {
-		host = strings.Replace(address, "unix:", "http://", 1)
-	} else if !strings.HasPrefix(address, "http://") {
-		host = "http://" + address
-	}
-	return &Client{httpclient: client, host: host}
 }
 
-func (client *Client) addHeaders(request *http.Request) {
-	for k, v := range client.Header {
-		for _, vv := range v {
-			request.Header.Add(k, vv)
-		}
-	}
+func defaultHeader() http.Header {
+	var header http.Header
+	header = make(map[string][]string)
+	header.Set("Content-Type", "application/grpc")
+	return header
 }

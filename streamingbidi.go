@@ -22,19 +22,18 @@ type BidiStreamForClient[Req, Res any] struct {
 //
 // The method argument should be the full path of the gRPC handler.
 func CallBidiStream[Req, Res any](client *Client, method string) (*BidiStreamForClient[Req, Res], error) {
-	url := client.host + method
+	url := client.Host + method
 	pr, pw := io.Pipe()
 	stream := &BidiStreamForClient[Req, Res]{
 		writer: pw,
 	}
-	stream.client = client.httpclient
+	stream.client = client.HttpClient
 	var err error
 	stream.req, err = http.NewRequest(http.MethodPost, url, io.NopCloser(pr))
 	if err != nil {
 		return nil, err
 	}
-	stream.req.Header.Set("Content-Type", "application/grpc")
-	client.addHeaders(stream.req)
+	stream.req.Header = client.Header.Clone()
 	stream.wg.Go(func() {
 		// This will complete when the server sends its first reply.
 		resp, err := stream.client.Do(stream.req)

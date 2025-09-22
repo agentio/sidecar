@@ -19,14 +19,14 @@ func CallUnary[Req, Res any](client *Client, method string, request *Req) (*Unar
 	if err != nil {
 		return nil, err
 	}
-	url := client.host + method
+	url := client.Host + method
 	req, err := http.NewRequest(http.MethodPost, url, buf)
 	if err != nil {
 		return nil, err
 	}
+	req.Header = client.Header.Clone()
 	req.Header.Set("Content-Type", "application/grpc")
-	client.addHeaders(req)
-	resp, err := client.httpclient.Do(req)
+	resp, err := client.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
