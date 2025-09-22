@@ -9,7 +9,7 @@ import (
 
 func Cmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "raw",
+		Use: "echo-sidecar",
 	}
 
 	cmd.AddCommand(call.Cmd())
