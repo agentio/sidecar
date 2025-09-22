@@ -34,6 +34,7 @@ func CallClientStream[Req, Res any](client *Client, method string) (*ClientStrea
 		return nil, err
 	}
 	stream.req.Header.Set("Content-Type", "application/grpc")
+	client.addHeaders(stream.req)
 	stream.wg.Go(func() {
 		// This will complete when the client closes and the server reply is sent.
 		resp, err := stream.client.Do(stream.req)

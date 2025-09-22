@@ -34,6 +34,7 @@ func CallBidiStream[Req, Res any](client *Client, method string) (*BidiStreamFor
 		return nil, err
 	}
 	stream.req.Header.Set("Content-Type", "application/grpc")
+	client.addHeaders(stream.req)
 	stream.wg.Go(func() {
 		// This will complete when the server sends its first reply.
 		resp, err := stream.client.Do(stream.req)

@@ -25,6 +25,7 @@ func CallUnary[Req, Res any](client *Client, method string, request *Req) (*Unar
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/grpc")
+	client.addHeaders(req)
 	resp, err := client.httpclient.Do(req)
 	if err != nil {
 		return nil, err

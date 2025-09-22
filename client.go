@@ -15,6 +15,7 @@ import (
 type Client struct {
 	httpclient *http.Client
 	host       string
+	Header     http.Header
 }
 
 // NewClient creates a client representation that includes an http.Client
@@ -51,4 +52,12 @@ func NewClient(address string) *Client {
 		host = "http://" + address
 	}
 	return &Client{httpclient: client, host: host}
+}
+
+func (client *Client) addHeaders(request *http.Request) {
+	for k, v := range client.Header {
+		for _, vv := range v {
+			request.Header.Add(k, vv)
+		}
+	}
 }
