@@ -22,13 +22,10 @@ func HandleServerStreaming[Req any, Res any](fn ServerStreamingFunction[Req, Res
 		var request Req
 		err := Receive(r.Body, &request)
 		if err != nil {
-			return
+			goto end
 		}
 		err = fn(&Request[Req]{Msg: &request}, &ServerStream[Res]{writer: w})
-		if err != nil {
-			w.Header().Set("Trailer:Grpc-Status", "11")
-			return
-		}
-		w.Header().Set("Trailer:Grpc-Status", "0")
+	end:
+		WriteTrailer(w, err)
 	}
 }

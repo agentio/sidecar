@@ -26,12 +26,10 @@ func HandleClientStreaming[Req any, Res any](fn ClientStreamingFunction[Req, Res
 		w.Header().Set("Content-Type", "application/grpc")
 		response, err := fn(&ClientStream[Req]{reader: r.Body})
 		if err != nil {
-			return
+			goto end
 		}
 		err = Send(w, response.Msg)
-		if err != nil {
-			return
-		}
-		w.Header().Set("Trailer:Grpc-Status", "0")
+	end:
+		WriteTrailer(w, err)
 	}
 }

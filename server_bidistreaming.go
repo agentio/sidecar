@@ -31,10 +31,6 @@ func HandleBidiStreaming[Req any, Res any](fn BidiStreamingFunction[Req, Res]) f
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/grpc")
 		err := fn(&BidiStream[Req, Res]{reader: r.Body, writer: w})
-		if err != nil {
-			w.Header().Set("Trailer:Grpc-Status", "11")
-			return
-		}
-		w.Header().Set("Trailer:Grpc-Status", "0")
+		WriteTrailer(w, err)
 	}
 }

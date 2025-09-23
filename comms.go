@@ -3,10 +3,12 @@ package sidecar
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/agentio/sidecar/codes"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -33,8 +35,10 @@ func Send(w io.Writer, value any) error {
 // The value must be a proto.Message; if not, an error is returned.
 func Receive(reader io.Reader, value any) error {
 	b, err := unframe(reader)
-	if err != nil {
+	if errors.Is(err, io.EOF) {
 		return err
+	} else if err != nil {
+		return NewError(err, codes.InvalidArgument)
 	}
 	// A []byte value is set to the raw message body.
 	if byteSlice, ok := value.(*[]byte); ok {
@@ -45,7 +49,7 @@ func Receive(reader io.Reader, value any) error {
 	if message, ok := value.(proto.Message); ok {
 		return proto.Unmarshal(b, message)
 	}
-	return fmt.Errorf("unsupported message type: %T", value)
+	return NewError(fmt.Errorf("unsupported message type: %T", value), codes.InvalidArgument)
 }
 
 func serialize(value any) (*bytes.Buffer, error) {
@@ -62,7 +66,7 @@ func serialize(value any) (*bytes.Buffer, error) {
 		}
 		return frame(b), nil
 	}
-	return nil, fmt.Errorf("unsupported message type: %T", value)
+	return nil, NewError(fmt.Errorf("unsupported message type: %T", value), codes.InvalidArgument)
 }
 
 func frame(b []byte) *bytes.Buffer {
