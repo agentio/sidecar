@@ -1,5 +1,5 @@
-// Package service contains constants describing the Echo service.
-package service
+// Package constants contains constants describing the Echo service.
+package constants
 
 // These are the fully-qualified names of the Echo RPCs.
 const (

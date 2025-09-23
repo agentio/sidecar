@@ -7,8 +7,8 @@ import (
 	"io"
 
 	"github.com/agentio/sidecar"
+	"github.com/agentio/sidecar/cmd/echo-sidecar/constants"
 	"github.com/agentio/sidecar/cmd/echo-sidecar/genproto/echopb"
-	"github.com/agentio/sidecar/cmd/echo-sidecar/service"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"
 )
@@ -25,7 +25,7 @@ func Cmd() *cobra.Command {
 			client := sidecar.NewClient(address)
 			stream, err := sidecar.CallServerStream[echopb.EchoRequest, echopb.EchoResponse](
 				client,
-				service.EchoExpandProcedure,
+				constants.EchoExpandProcedure,
 				&echopb.EchoRequest{Text: message},
 			)
 			if err != nil {

@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/agentio/sidecar"
+	"github.com/agentio/sidecar/cmd/echo-sidecar/constants"
 	"github.com/agentio/sidecar/cmd/echo-sidecar/genproto/echopb"
-	"github.com/agentio/sidecar/cmd/echo-sidecar/service"
 	"github.com/agentio/sidecar/cmd/echo-sidecar/track"
 	"github.com/spf13/cobra"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -27,8 +27,8 @@ func Cmd() *cobra.Command {
 			for j := 0; j < n; j++ {
 				response, err := sidecar.CallUnary[echopb.EchoRequest, echopb.EchoResponse](
 					client,
-					service.EchoGetProcedure,
-					&echopb.EchoRequest{Text: message},
+					constants.EchoGetProcedure,
+					&sidecar.Request[echopb.EchoRequest]{Msg: &echopb.EchoRequest{Text: message}},
 				)
 				if err != nil {
 					return err
