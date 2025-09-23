@@ -17,10 +17,10 @@ func (b *BidiStream[Req, Res]) Send(msg *Res) error {
 }
 
 // Receive reads a request message from a bidi stream.
-func (b *BidiStream[Req, Res]) Receive() (*Res, error) {
-	var response Res
-	err := Receive(b.reader, &response)
-	return &response, err
+func (b *BidiStream[Req, Res]) Receive() (*Req, error) {
+	var request Req
+	err := Receive(b.reader, &request)
+	return &request, err
 }
 
 // Bidi streaming handlers should be functions that implement this interface.
