@@ -49,11 +49,9 @@ func Cmd() *cobra.Command {
 }
 
 func get(req *sidecar.Request[echopb.EchoRequest]) (*sidecar.Response[echopb.EchoResponse], error) {
-	return &sidecar.Response[echopb.EchoResponse]{
-		Msg: &echopb.EchoResponse{
-			Text: "Go echo get: " + req.Msg.Text,
-		},
-	}, nil
+	return sidecar.NewResponse(&echopb.EchoResponse{
+		Text: "Go echo get: " + req.Msg.Text,
+	}), nil
 }
 
 func expand(req *sidecar.Request[echopb.EchoRequest], stream *sidecar.ServerStream[echopb.EchoResponse]) error {
@@ -77,11 +75,9 @@ func collect(stream *sidecar.ClientStream[echopb.EchoRequest]) (*sidecar.Respons
 		}
 		parts = append(parts, request.Text)
 	}
-	return &sidecar.Response[echopb.EchoResponse]{
-		Msg: &echopb.EchoResponse{
-			Text: "Go echo collect: " + strings.Join(parts, " "),
-		},
-	}, nil
+	return sidecar.NewResponse(&echopb.EchoResponse{
+		Text: "Go echo collect: " + strings.Join(parts, " "),
+	}), nil
 }
 
 func update(stream *sidecar.BidiStream[echopb.EchoRequest, echopb.EchoResponse]) error {
