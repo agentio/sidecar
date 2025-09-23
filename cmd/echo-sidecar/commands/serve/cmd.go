@@ -24,10 +24,10 @@ func Cmd() *cobra.Command {
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			mux := http.NewServeMux()
-			mux.HandleFunc(constants.EchoGetProcedure, sidecar.Unary(get))
-			mux.HandleFunc(constants.EchoExpandProcedure, sidecar.ServerStreaming(expand))
-			mux.HandleFunc(constants.EchoCollectProcedure, sidecar.ClientStreaming(collect))
-			mux.HandleFunc(constants.EchoUpdateProcedure, sidecar.BidiStreaming(update))
+			mux.HandleFunc(constants.EchoGetProcedure, sidecar.HandleUnary(get))
+			mux.HandleFunc(constants.EchoExpandProcedure, sidecar.HandleServerStreaming(expand))
+			mux.HandleFunc(constants.EchoCollectProcedure, sidecar.HandleClientStreaming(collect))
+			mux.HandleFunc(constants.EchoUpdateProcedure, sidecar.HandleBidiStreaming(update))
 			server := sidecar.NewServer(mux)
 			var err error
 			var listener net.Listener

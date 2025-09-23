@@ -2,9 +2,11 @@ package sidecar
 
 import "net/http"
 
-type unary[Req, Res any] func(request *Request[Req]) (*Response[Res], error)
+// Unary handlers should be functions that implement this interface.
+type UnaryFunction[Req, Res any] func(request *Request[Req]) (*Response[Res], error)
 
-func Unary[Req any, Res any](fn unary[Req, Res]) func(w http.ResponseWriter, r *http.Request) {
+// HandleUnary wraps a unary function in an HTTP handler.
+func HandleUnary[Req any, Res any](fn UnaryFunction[Req, Res]) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/grpc")
 		var request Req

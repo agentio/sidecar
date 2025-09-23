@@ -28,7 +28,7 @@ func Cmd() *cobra.Command {
 				response, err := sidecar.CallUnary[echopb.EchoRequest, echopb.EchoResponse](
 					client,
 					constants.EchoGetProcedure,
-					&sidecar.Request[echopb.EchoRequest]{Msg: &echopb.EchoRequest{Text: message}},
+					sidecar.NewRequest(&echopb.EchoRequest{Text: message}),
 				)
 				if err != nil {
 					return err

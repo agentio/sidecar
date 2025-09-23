@@ -16,8 +16,8 @@ type ServerStreamForClient[Req, Res any] struct {
 // CallServerStream makes a server-streaming RPC call.
 //
 // The method argument should be the full path of the gRPC handler.
-func CallServerStream[Req, Res any](client *Client, method string, request *Req) (*ServerStreamForClient[Req, Res], error) {
-	buf, err := serialize(request)
+func CallServerStream[Req, Res any](client *Client, method string, request *Request[Req]) (*ServerStreamForClient[Req, Res], error) {
+	buf, err := serialize(request.Msg)
 	if err != nil {
 		return nil, err
 	}

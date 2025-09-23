@@ -30,7 +30,7 @@ client := sidecar.NewClient(address)
 response, err := sidecar.CallUnary[echopb.EchoRequest, echopb.EchoResponse](
 	client,
 	"/echo.v1.Echo/Get",
-	&sidecar.Request[echopb.EchoRequest]{Msg: &echopb.EchoRequest{Text: message}},
+	sidecar.NewRequest(&echopb.EchoRequest{Text: message}),
 )
 ```
 
@@ -46,7 +46,7 @@ b, _ := proto.Marshal(&echopb.EchoRequest{Text: message})
 response, err := sidecar.CallUnary[[]byte, []byte](
 	client,
 	"/echo.v1.Echo/Get",
-	&sidecar.Request[[]byte]{Msg: &b},
+	sidecar.NewRequest(&b),
 )
 // Unmarshal the response
 var message echopb.EchoResponse

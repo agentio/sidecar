@@ -26,7 +26,7 @@ func Cmd() *cobra.Command {
 			stream, err := sidecar.CallServerStream[echopb.EchoRequest, echopb.EchoResponse](
 				client,
 				constants.EchoExpandProcedure,
-				&echopb.EchoRequest{Text: message},
+				sidecar.NewRequest(&echopb.EchoRequest{Text: message}),
 			)
 			if err != nil {
 				return err
