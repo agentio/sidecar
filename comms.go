@@ -47,7 +47,11 @@ func Receive(reader io.Reader, value any) error {
 	}
 	// A proto.Message value is set to the unmarshalled message.
 	if message, ok := value.(proto.Message); ok {
-		return proto.Unmarshal(b, message)
+		err = proto.Unmarshal(b, message)
+		if err != nil {
+			return fmt.Errorf("failed to unmarshal %T, %s", message, err)
+		}
+		return nil
 	}
 	return NewError(fmt.Errorf("unsupported message type: %T", value), codes.InvalidArgument)
 }
@@ -95,9 +99,12 @@ func unframe(reader io.Reader) ([]byte, error) {
 	}
 	length := binary.BigEndian.Uint32(prefix[1:5])
 	b := make([]byte, length)
-	_, err = reader.Read(b)
+	n, err = io.ReadFull(reader, b)
 	if err != nil {
 		return nil, err
+	}
+	if n != int(length) {
+		return nil, fmt.Errorf("failed to read %d bytes, got %d instead", length, n)
 	}
 	return b, err
 }
