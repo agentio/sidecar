@@ -1,4 +1,4 @@
-# Sidecar RPC
+# Sidecar gRPC
 
 Sidecar is a library for creating gRPC clients and servers in Go.
 
