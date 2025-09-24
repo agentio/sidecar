@@ -67,5 +67,6 @@ func defaultHeader() http.Header {
 	var header http.Header
 	header = make(map[string][]string)
 	header.Set("Content-Type", "application/grpc")
+	header.Set("TE", "trailers")
 	return header
 }
