@@ -60,7 +60,7 @@ func (b *BidiStreamForClient[Req, Res]) CloseRequest() error {
 
 // Receive reads a message from the bidi-streaming method.
 func (b *BidiStreamForClient[Req, Res]) Receive() (*Res, error) {
-	b.wg.Wait() // wait for Reader to be set
+	b.wg.Wait() // wait for reader to be set
 	var response Res
 	err := Receive(b.reader, &response)
 	return &response, err
