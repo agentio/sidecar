@@ -69,6 +69,9 @@ func (b *BidiStreamForClient[Req, Res]) Receive() (*Res, error) {
 // CloseResponse closes the connection to the bidi-streaming method.
 func (b *BidiStreamForClient[Req, Res]) CloseResponse() error {
 	_, err := io.ReadAll(b.reader)
+	if err != nil {
+		return err
+	}
 	b.Trailer = b.resp.Trailer
-	return err
+	return ErrorForTrailer(b.Trailer)
 }

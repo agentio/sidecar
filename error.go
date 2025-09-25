@@ -1,6 +1,7 @@
 package sidecar
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -48,4 +49,14 @@ func WriteTrailer(w http.ResponseWriter, err error) {
 	}
 	w.Header().Set("Trailer:Grpc-Status", strconv.Itoa(ErrorCode(err)))
 	w.Header().Set("Trailer:Grpc-Message", err.Error())
+}
+
+func ErrorForTrailer(trailer http.Header) error {
+	status := trailer.Get("Grpc-Status")
+	if status == "0" {
+		return nil
+	}
+	message := trailer.Get("Grpc-Message")
+	code, _ := strconv.Atoi(status)
+	return NewError(errors.New(message), codes.Code(code))
 }

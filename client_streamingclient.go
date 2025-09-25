@@ -1,6 +1,7 @@
 package sidecar
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"sync"
@@ -64,10 +65,13 @@ func (b *ClientStreamForClient[Req, Res]) CloseAndReceive() (*Res, error) {
 	b.wg.Wait()
 	var response Res
 	err = Receive(b.reader, &response)
-	if err != nil {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, err
 	}
 	_, err = io.ReadAll(b.reader)
+	if err != nil {
+		return nil, err
+	}
 	b.Trailer = b.resp.Trailer
-	return &response, err
+	return &response, ErrorForTrailer(b.Trailer)
 }

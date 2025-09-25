@@ -1,6 +1,7 @@
 package sidecar
 
 import (
+	"errors"
 	"io"
 	"net/http"
 )
@@ -27,7 +28,7 @@ func CallUnary[Req, Res any](client *Client, method string, request *Request[Req
 	defer func() { _ = resp.Body.Close() }()
 	var response Res
 	err = Receive(resp.Body, &response)
-	if err != nil {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return nil, err
 	}
 	_, err = io.ReadAll(resp.Body)
@@ -37,5 +38,5 @@ func CallUnary[Req, Res any](client *Client, method string, request *Request[Req
 	return &Response[Res]{
 		Msg:     &response,
 		Trailer: resp.Trailer,
-	}, nil
+	}, ErrorForTrailer(resp.Trailer)
 }
