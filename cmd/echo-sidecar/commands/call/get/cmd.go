@@ -26,6 +26,7 @@ func Cmd() *cobra.Command {
 			defer track.Measure(time.Now(), "get", n, cmd.OutOrStdout())
 			for j := 0; j < n; j++ {
 				response, err := sidecar.CallUnary[echopb.EchoRequest, echopb.EchoResponse](
+					cmd.Context(),
 					client,
 					constants.EchoGetProcedure,
 					sidecar.NewRequest(&echopb.EchoRequest{Text: message}),

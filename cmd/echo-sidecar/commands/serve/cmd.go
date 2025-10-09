@@ -2,6 +2,7 @@
 package serve
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -48,13 +49,13 @@ func Cmd() *cobra.Command {
 	return cmd
 }
 
-func get(req *sidecar.Request[echopb.EchoRequest]) (*sidecar.Response[echopb.EchoResponse], error) {
+func get(ctx context.Context, req *sidecar.Request[echopb.EchoRequest]) (*sidecar.Response[echopb.EchoResponse], error) {
 	return sidecar.NewResponse(&echopb.EchoResponse{
 		Text: "Go echo get: " + req.Msg.Text,
 	}), nil
 }
 
-func expand(req *sidecar.Request[echopb.EchoRequest], stream *sidecar.ServerStream[echopb.EchoResponse]) error {
+func expand(ctx context.Context, req *sidecar.Request[echopb.EchoRequest], stream *sidecar.ServerStream[echopb.EchoResponse]) error {
 	parts := strings.Split(req.Msg.Text, " ")
 	for _, part := range parts {
 		if err := stream.Send(&echopb.EchoResponse{Text: "Go echo expand: " + part}); err != nil {
@@ -64,7 +65,7 @@ func expand(req *sidecar.Request[echopb.EchoRequest], stream *sidecar.ServerStre
 	return nil
 }
 
-func collect(stream *sidecar.ClientStream[echopb.EchoRequest]) (*sidecar.Response[echopb.EchoResponse], error) {
+func collect(ctx context.Context, stream *sidecar.ClientStream[echopb.EchoRequest]) (*sidecar.Response[echopb.EchoResponse], error) {
 	parts := []string{}
 	for {
 		request, err := stream.Receive()
@@ -80,7 +81,7 @@ func collect(stream *sidecar.ClientStream[echopb.EchoRequest]) (*sidecar.Respons
 	}), nil
 }
 
-func update(stream *sidecar.BidiStream[echopb.EchoRequest, echopb.EchoResponse]) error {
+func update(ctx context.Context, stream *sidecar.BidiStream[echopb.EchoRequest, echopb.EchoResponse]) error {
 	for {
 		request, err := stream.Receive()
 		if errors.Is(err, io.EOF) {

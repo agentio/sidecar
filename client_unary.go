@@ -1,6 +1,7 @@
 package sidecar
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -9,13 +10,13 @@ import (
 // CallUnary makes a unary RPC call.
 //
 // The method argument should be the full path of the gRPC handler.
-func CallUnary[Req, Res any](client *Client, method string, request *Request[Req]) (*Response[Res], error) {
+func CallUnary[Req, Res any](ctx context.Context, client *Client, method string, request *Request[Req]) (*Response[Res], error) {
 	buf, err := serialize(request.Msg)
 	if err != nil {
 		return nil, err
 	}
 	url := client.Host + method
-	req, err := http.NewRequest(http.MethodPost, url, buf)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, buf)
 	if err != nil {
 		return nil, err
 	}

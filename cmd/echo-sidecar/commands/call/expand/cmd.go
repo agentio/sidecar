@@ -24,6 +24,7 @@ func Cmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client := sidecar.NewClient(address)
 			stream, err := sidecar.CallServerStream[echopb.EchoRequest, echopb.EchoResponse](
+				cmd.Context(),
 				client,
 				constants.EchoExpandProcedure,
 				sidecar.NewRequest(&echopb.EchoRequest{Text: message}),

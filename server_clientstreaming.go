@@ -1,6 +1,7 @@
 package sidecar
 
 import (
+	"context"
 	"io"
 	"net/http"
 )
@@ -18,13 +19,13 @@ func (b *ClientStream[Req]) Receive() (*Req, error) {
 }
 
 // Client streaming handlers should be functions that implement this interface.
-type ClientStreamingFunction[Req, Res any] func(stream *ClientStream[Req]) (*Response[Res], error)
+type ClientStreamingFunction[Req, Res any] func(ctx context.Context, stream *ClientStream[Req]) (*Response[Res], error)
 
 // HandleClientStreaming wraps a client streaming function in an HTTP handler.
 func HandleClientStreaming[Req any, Res any](fn ClientStreamingFunction[Req, Res]) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/grpc")
-		response, err := fn(&ClientStream[Req]{reader: r.Body})
+		response, err := fn(r.Context(), &ClientStream[Req]{reader: r.Body})
 		if err != nil {
 			goto end
 		}

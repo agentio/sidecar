@@ -1,11 +1,12 @@
 package sidecar
 
 import (
+	"context"
 	"net/http"
 )
 
 // Unary handlers should be functions that implement this interface.
-type UnaryFunction[Req, Res any] func(request *Request[Req]) (*Response[Res], error)
+type UnaryFunction[Req, Res any] func(ctx context.Context, request *Request[Req]) (*Response[Res], error)
 
 // HandleUnary wraps a unary function in an HTTP handler.
 func HandleUnary[Req any, Res any](fn UnaryFunction[Req, Res]) func(w http.ResponseWriter, r *http.Request) {
@@ -17,7 +18,7 @@ func HandleUnary[Req any, Res any](fn UnaryFunction[Req, Res]) func(w http.Respo
 		if err != nil {
 			goto end
 		}
-		response, err = fn(&Request[Req]{Msg: &request})
+		response, err = fn(r.Context(), &Request[Req]{Msg: &request})
 		if err != nil {
 			goto end
 		}

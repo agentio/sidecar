@@ -1,6 +1,7 @@
 package sidecar
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"sync"
@@ -21,7 +22,7 @@ type BidiStreamForClient[Req, Res any] struct {
 // CallBidiStream makes a bidi-streaming RPC call.
 //
 // The method argument should be the full path of the gRPC handler.
-func CallBidiStream[Req, Res any](client *Client, method string) (*BidiStreamForClient[Req, Res], error) {
+func CallBidiStream[Req, Res any](ctx context.Context, client *Client, method string) (*BidiStreamForClient[Req, Res], error) {
 	url := client.Host + method
 	pr, pw := io.Pipe()
 	stream := &BidiStreamForClient[Req, Res]{
@@ -29,7 +30,7 @@ func CallBidiStream[Req, Res any](client *Client, method string) (*BidiStreamFor
 	}
 	stream.client = client.HttpClient
 	var err error
-	stream.req, err = http.NewRequest(http.MethodPost, url, io.NopCloser(pr))
+	stream.req, err = http.NewRequestWithContext(ctx, http.MethodPost, url, io.NopCloser(pr))
 	if err != nil {
 		return nil, err
 	}

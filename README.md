@@ -28,6 +28,7 @@ Apart from protocol buffer serialization, Sidecar does not use code generation. 
 client := sidecar.NewClient(address)
 // Use the client to make a unary rpc call.
 response, err := sidecar.CallUnary[echopb.EchoRequest, echopb.EchoResponse](
+	ctx,
 	client,
 	"/echo.v1.Echo/Get",
 	sidecar.NewRequest(&echopb.EchoRequest{Text: message}),
@@ -48,6 +49,7 @@ client := sidecar.NewClient(address)
 b, _ := proto.Marshal(&echopb.EchoRequest{Text: message})
 // Use the client to make a unary rpc call.
 response, err := sidecar.CallUnary[[]byte, []byte](
+	ctx,
 	client,
 	"/echo.v1.Echo/Get",
 	sidecar.NewRequest(&b),

@@ -1,6 +1,7 @@
 package sidecar
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -22,7 +23,7 @@ type ClientStreamForClient[Req, Res any] struct {
 // CallClientStream makes a client-streaming RPC call.
 //
 // The method argument should be the full path of the gRPC handler.
-func CallClientStream[Req, Res any](client *Client, method string) (*ClientStreamForClient[Req, Res], error) {
+func CallClientStream[Req, Res any](ctx context.Context, client *Client, method string) (*ClientStreamForClient[Req, Res], error) {
 	url := client.Host + method
 	pr, pw := io.Pipe()
 	stream := &ClientStreamForClient[Req, Res]{
@@ -30,7 +31,7 @@ func CallClientStream[Req, Res any](client *Client, method string) (*ClientStrea
 	}
 	stream.client = client.HttpClient
 	var err error
-	stream.req, err = http.NewRequest(http.MethodPost, url, io.NopCloser(pr))
+	stream.req, err = http.NewRequestWithContext(ctx, http.MethodPost, url, io.NopCloser(pr))
 	if err != nil {
 		return nil, err
 	}

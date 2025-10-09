@@ -1,6 +1,7 @@
 package sidecar
 
 import (
+	"context"
 	"io"
 	"net/http"
 )
@@ -16,13 +17,13 @@ type ServerStreamForClient[Req, Res any] struct {
 // CallServerStream makes a server-streaming RPC call.
 //
 // The method argument should be the full path of the gRPC handler.
-func CallServerStream[Req, Res any](client *Client, method string, request *Request[Req]) (*ServerStreamForClient[Req, Res], error) {
+func CallServerStream[Req, Res any](ctx context.Context, client *Client, method string, request *Request[Req]) (*ServerStreamForClient[Req, Res], error) {
 	buf, err := serialize(request.Msg)
 	if err != nil {
 		return nil, err
 	}
 	url := client.Host + method
-	req, err := http.NewRequest(http.MethodPost, url, buf)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, buf)
 	if err != nil {
 		return nil, err
 	}

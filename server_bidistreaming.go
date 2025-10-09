@@ -1,6 +1,7 @@
 package sidecar
 
 import (
+	"context"
 	"io"
 	"net/http"
 )
@@ -24,13 +25,13 @@ func (b *BidiStream[Req, Res]) Receive() (*Req, error) {
 }
 
 // Bidi streaming handlers should be functions that implement this interface.
-type BidiStreamingFunction[Req, Res any] func(stream *BidiStream[Req, Res]) error
+type BidiStreamingFunction[Req, Res any] func(ctx context.Context, stream *BidiStream[Req, Res]) error
 
 // HandleBidiStreaming wraps a bidi streaming function in an HTTP handler.
 func HandleBidiStreaming[Req any, Res any](fn BidiStreamingFunction[Req, Res]) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/grpc")
-		err := fn(&BidiStream[Req, Res]{reader: r.Body, writer: w})
+		err := fn(r.Context(), &BidiStream[Req, Res]{reader: r.Body, writer: w})
 		WriteTrailer(w, err)
 	}
 }

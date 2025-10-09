@@ -1,6 +1,9 @@
 package sidecar
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+)
 
 // ServerStream provides messaging to server streaming handlers.
 type ServerStream[Res any] struct {
@@ -13,7 +16,7 @@ func (b *ServerStream[Res]) Send(msg *Res) error {
 }
 
 // Server streaming handlers should be functions that implement this interface.
-type ServerStreamingFunction[Req, Res any] func(request *Request[Req], stream *ServerStream[Res]) error
+type ServerStreamingFunction[Req, Res any] func(ctx context.Context, request *Request[Req], stream *ServerStream[Res]) error
 
 // HandleServerStreaming wraps a server streaming function in an HTTP handler.
 func HandleServerStreaming[Req any, Res any](fn ServerStreamingFunction[Req, Res]) func(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +27,7 @@ func HandleServerStreaming[Req any, Res any](fn ServerStreamingFunction[Req, Res
 		if err != nil {
 			goto end
 		}
-		err = fn(&Request[Req]{Msg: &request}, &ServerStream[Res]{writer: w})
+		err = fn(r.Context(), &Request[Req]{Msg: &request}, &ServerStream[Res]{writer: w})
 	end:
 		WriteTrailer(w, err)
 	}

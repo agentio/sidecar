@@ -25,6 +25,7 @@ func Cmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client := sidecar.NewClient(address)
 			stream, err := sidecar.CallBidiStream[echopb.EchoRequest, echopb.EchoResponse](
+				cmd.Context(),
 				client,
 				constants.EchoUpdateProcedure,
 			)
