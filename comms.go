@@ -9,6 +9,8 @@ import (
 	"net/http"
 
 	"github.com/agentio/sidecar/codes"
+	"golang.org/x/net/http2"
+
 	"google.golang.org/protobuf/proto"
 )
 
@@ -88,6 +90,12 @@ func unframe(reader io.Reader) ([]byte, error) {
 	prefix := make([]byte, 5)
 	n, err := reader.Read(prefix)
 	if err != nil {
+		var streamErr http2.StreamError
+		if errors.As(err, &streamErr) {
+			if streamErr.Code == http2.ErrCodeNo { // end of stream, no error
+				return nil, io.EOF
+			}
+		}
 		return nil, err
 	}
 	if n != 5 {
