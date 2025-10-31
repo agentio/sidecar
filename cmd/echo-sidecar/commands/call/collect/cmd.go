@@ -17,11 +17,13 @@ func Cmd() *cobra.Command {
 	var address string
 	var n int
 	var verbose bool
+	var insecure bool
+	var headers []string
 	cmd := &cobra.Command{
 		Use:  "collect",
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client := sidecar.NewClient(address)
+			client := sidecar.NewClient(sidecar.ClientOptions{Address: address, Insecure: insecure, Headers: headers})
 			stream, err := sidecar.CallClientStream[echopb.EchoRequest, echopb.EchoResponse](
 				cmd.Context(),
 				client,
@@ -60,5 +62,7 @@ func Cmd() *cobra.Command {
 	cmd.Flags().StringVarP(&address, "address", "a", "unix:@echo", "address of the echo server to use")
 	cmd.Flags().IntVarP(&n, "number", "n", 1, "number of times to call the method")
 	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "verbose")
+	cmd.Flags().BoolVarP(&insecure, "insecure", "i", false, "disable TLS certificate verification")
+	cmd.Flags().StringArrayVarP(&headers, "header", "H", []string{}, "headers to add to the request")
 	return cmd
 }

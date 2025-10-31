@@ -3,6 +3,7 @@ package get
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/agentio/sidecar"
@@ -18,11 +19,13 @@ func Cmd() *cobra.Command {
 	var address string
 	var n int
 	var verbose bool
+	var insecure bool
+	var headers []string
 	cmd := &cobra.Command{
 		Use:  "get",
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client := sidecar.NewClient(address)
+			client := sidecar.NewClient(sidecar.ClientOptions{Address: address, Insecure: insecure, Headers: headers})
 			defer track.Measure(time.Now(), "get", n, cmd.OutOrStdout())
 			for j := 0; j < n; j++ {
 				response, err := sidecar.CallUnary[echopb.EchoRequest, echopb.EchoResponse](
@@ -32,11 +35,14 @@ func Cmd() *cobra.Command {
 					sidecar.NewRequest(&echopb.EchoRequest{Text: message}),
 				)
 				if err != nil {
+					log.Printf("returning from 1 %T %+v", err, err)
 					return err
 				}
 				if n == 1 {
 					body, err := protojson.Marshal(response.Msg)
 					if err != nil {
+						log.Printf("returning from 2")
+
 						return err
 					}
 					_, _ = cmd.OutOrStdout().Write(body)
@@ -56,5 +62,7 @@ func Cmd() *cobra.Command {
 	cmd.Flags().StringVarP(&address, "address", "a", "unix:@echo", "address of the echo server to use")
 	cmd.Flags().IntVarP(&n, "number", "n", 1, "number of times to call the method")
 	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "verbose")
+	cmd.Flags().BoolVarP(&insecure, "insecure", "i", false, "disable TLS certificate verification")
+	cmd.Flags().StringArrayVarP(&headers, "header", "H", []string{}, "headers to add to the request")
 	return cmd
 }

@@ -193,5 +193,5 @@ const (
 	// but also expect authentication middleware to generate it.
 	Unauthenticated Code = 16
 
-	_maxCode = 17
+	MaxCode = 17
 )

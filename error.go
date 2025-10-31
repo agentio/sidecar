@@ -53,10 +53,14 @@ func WriteTrailer(w http.ResponseWriter, err error) {
 
 func ErrorForTrailer(trailer http.Header) error {
 	status := trailer.Get("Grpc-Status")
-	if status == "0" {
+	if status == "0" || status == "" {
 		return nil
 	}
-	message := trailer.Get("Grpc-Message")
 	code, _ := strconv.Atoi(status)
+	message := trailer.Get("Grpc-Message")
 	return NewError(errors.New(message), codes.Code(code))
+}
+
+func ErrorForCode(code codes.Code) error {
+	return NewError(errors.New(codes.Name(code)), codes.Code(code))
 }

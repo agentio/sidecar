@@ -4,6 +4,8 @@ import (
 	"context"
 	"io"
 	"net/http"
+
+	"github.com/agentio/sidecar/codes"
 )
 
 // ServerStreamForClient holds state for a server-streaming RPC call.
@@ -31,6 +33,9 @@ func CallServerStream[Req, Res any](ctx context.Context, client *Client, method 
 	resp, err := client.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
+	}
+	if code := codes.CodeFromResponse(resp); code != 0 {
+		return nil, ErrorForCode(codes.Code(code))
 	}
 	return &ServerStreamForClient[Req, Res]{
 		reader: resp.Body,

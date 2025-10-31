@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"sync"
+
+	"github.com/agentio/sidecar/codes"
 )
 
 // ClientStreamForClient holds state for a client-streaming RPC call.
@@ -18,6 +20,7 @@ type ClientStreamForClient[Req, Res any] struct {
 	reader io.ReadCloser
 	writer io.WriteCloser
 	wg     sync.WaitGroup
+	code   codes.Code
 }
 
 // CallClientStream makes a client-streaming RPC call.
@@ -42,6 +45,7 @@ func CallClientStream[Req, Res any](ctx context.Context, client *Client, method 
 		if err != nil {
 			return
 		}
+		stream.code = codes.CodeFromResponse(resp)
 		stream.reader = resp.Body
 		stream.resp = resp
 	})
@@ -64,6 +68,9 @@ func (b *ClientStreamForClient[Req, Res]) CloseAndReceive() (*Res, error) {
 		return nil, err
 	}
 	b.wg.Wait()
+	if b.code != codes.OK {
+		return nil, ErrorForCode(b.code)
+	}
 	var response Res
 	err = Receive(b.reader, &response)
 	if err != nil && !errors.Is(err, io.EOF) {

@@ -5,6 +5,8 @@ import (
 	"io"
 	"net/http"
 	"sync"
+
+	"github.com/agentio/sidecar/codes"
 )
 
 // BidiStreamForClient holds state for a bidi-streaming RPC call.
@@ -17,6 +19,7 @@ type BidiStreamForClient[Req, Res any] struct {
 	reader io.ReadCloser
 	writer io.WriteCloser
 	wg     sync.WaitGroup
+	code   codes.Code
 }
 
 // CallBidiStream makes a bidi-streaming RPC call.
@@ -41,6 +44,7 @@ func CallBidiStream[Req, Res any](ctx context.Context, client *Client, method st
 		if err != nil {
 			return
 		}
+		stream.code = codes.CodeFromResponse(resp)
 		stream.reader = resp.Body
 		stream.resp = resp
 	})
@@ -62,6 +66,9 @@ func (b *BidiStreamForClient[Req, Res]) CloseRequest() error {
 // Receive reads a message from the bidi-streaming method.
 func (b *BidiStreamForClient[Req, Res]) Receive() (*Res, error) {
 	b.wg.Wait() // wait for reader to be set
+	if b.code != codes.OK {
+		return nil, ErrorForCode(b.code)
+	}
 	var response Res
 	err := Receive(b.reader, &response)
 	return &response, err

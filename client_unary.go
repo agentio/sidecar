@@ -5,6 +5,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+
+	"github.com/agentio/sidecar/codes"
 )
 
 // CallUnary makes a unary RPC call.
@@ -25,6 +27,9 @@ func CallUnary[Req, Res any](ctx context.Context, client *Client, method string,
 	resp, err := client.HttpClient.Do(req)
 	if err != nil {
 		return nil, err
+	}
+	if code := codes.CodeFromResponse(resp); code != 0 {
+		return nil, ErrorForCode(codes.Code(code))
 	}
 	defer func() { _ = resp.Body.Close() }()
 	var response Res
