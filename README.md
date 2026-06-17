@@ -35,10 +35,6 @@ response, err := sidecar.CallUnary[echopb.EchoRequest, echopb.EchoResponse](
 )
 ```
 
-## Example
-
-This repo includes [echo-sidecar](/cmd/echo-sidecar), a command-line tool that uses Sidecar to build and call a gRPC server that implements a simple echo service. All four gRPC streaming modes are demonstrated.
-
 ## Bring Your Own Serialization
 
 Along with protobuf-encoded messages, Sidecar allows messages to be sent and received as raw bytes. Here's an example using protobuf encoding that shows how you can use your own favorite encoding:
