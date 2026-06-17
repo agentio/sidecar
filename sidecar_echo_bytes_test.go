@@ -87,7 +87,7 @@ func RunEchoServerBytes(port int, socket string) (*http.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	go server.Serve(listener)
+	go func() { _ = server.Serve(listener) }()
 	return server, nil
 }
 
@@ -150,6 +150,9 @@ func testCollectBytes(t *testing.T, client *Client) {
 		}
 	}
 	msg, err := stream.CloseAndReceive()
+	if err != nil {
+		t.Fatalf("error %s", err)
+	}
 	if string(*msg) != "Go echo collect: hello hello hello" {
 		t.Errorf("Invalid collect response: %s", string(*msg))
 	}
