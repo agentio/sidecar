@@ -27,13 +27,18 @@ type ClientOptions struct {
 // Addresses must be in the format "HOSTNAME:PORT" or "unix:@SOCKET".
 // Connections to port 443 use TLS. All others are cleartext (h2c).
 func NewClient(options ClientOptions) *Client {
-	// Expect TLS on port 443 and use the default HTTP client.
+	// Expect TLS on port 443 and force TLS clients to use HTTP2.
 	if strings.HasSuffix(options.Address, ":443") {
+		protocols := new(http.Protocols)
+		protocols.SetUnencryptedHTTP2(false)
+		protocols.SetHTTP1(false)
+		protocols.SetHTTP2(true)
 		return (&Client{
 			Host:   "https://" + options.Address,
 			Header: defaultHeader(),
 			HttpClient: &http.Client{
 				Transport: &http.Transport{
+					Protocols:       protocols,
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: options.Insecure},
 				},
 			},
